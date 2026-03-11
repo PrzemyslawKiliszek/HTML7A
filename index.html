@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Le Chatelier · mit Richtungspfeil</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #0f3f50;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 8px;
+        }
+        .mobil-karte {
+            max-width: 480px;
+            width: 100%;
+            background: #e5f0f5;
+            border-radius: 40px 40px 35px 35px;
+            padding: 18px 12px 10px;
+            box-shadow: 0 20px 25px rgba(0,15,20,0.7), inset 0 1px 5px white;
+            position: relative;
+        }
+        h1 {
+            font-size: 1.7rem;
+            color: #003542;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+            padding-left: 5px;
+        }
+        .h1-sub {
+            background: #196277;
+            color: white;
+            font-size: 0.9rem;
+            padding: 4px 14px;
+            border-radius: 30px;
+        }
+
+        /* Reaktionszeile - alles in einer Reihe */
+        .reaktions-reihe {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            background: #95c2d4;
+            padding: 10px 6px;
+            border-radius: 50px;
+            margin: 12px 0 12px 0;
+            box-shadow: 0 4px 0 #3d7388;
+            flex-wrap: wrap;
+        }
+        .reihe-item {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: #fef5e1;
+            padding: 6px 14px;
+            border-radius: 40px;
+            box-shadow: inset 0 -3px 0 #b1945a;
+            white-space: nowrap;
+        }
+        .reihe-symbol {
+            font-size: 1.6rem;
+            font-weight: 500;
+            color: #012b36;
+        }
+
+        /* Vier kompakte Spalten */
+        .spalten-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            background: #195067;
+            border-radius: 35px;
+            padding: 15px 6px;
+            box-shadow: inset 0 0 0 3px #79aebe, 0 12px 15px rgba(0,0,0,0.4);
+            margin-bottom: 12px;
+        }
+        .mini-spalte {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 30px;
+            padding: 12px 3px;
+            flex: 1;
+            min-width: 0;
+        }
+        .spalten-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: #d1ecf7;
+            padding: 4px 0px;
+            width: 100%;
+            text-align: center;
+            border-radius: 30px;
+            margin-bottom: 10px;
+            color: #023946;
+            box-shadow: 0 3px 0 #35748b;
+        }
+        .kugel-stapel {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 3px;
+            min-height: 150px;
+            justify-content: flex-start;
+            background: rgba(0,0,0,0.15);
+            border-radius: 30px;
+            padding: 10px 3px;
+            width: 100%;
+        }
+
+        .kugel {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25), 0 0 0 2px white;
+            flex-shrink: 0;
+        }
+        .kugel.HAc { background-color: #c95f2b; }
+        .kugel.H2O { background-color: #f7d973; }
+        .kugel.Ac  { background-color: #409d87; }
+        .kugel.H3O { background-color: #3f7fb0; }
+
+        .zaehler {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            background: #124c5e;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 30px;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Button-Panel kompakt */
+        .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 12px 0 12px;
+        }
+        .btn-mobil {
+            border: none;
+            border-radius: 40px;
+            padding: 10px 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            background: white;
+            box-shadow: 0 4px 0 0 #698f9e;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.05s;
+            cursor: pointer;
+            flex: 1 0 auto;
+            min-width: 75px;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        .btn-mobil:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 0 #4a6f7e;
+        }
+        .zugabe-mobil { background: #d2efcd; color: #1a653a; }
+        .entnahme-mobil { background: #fbd4d4; color: #b13b3b; }
+
+        .reset-mobil {
+            background: #fedb9f;
+            border: none;
+            font-size: 1.3rem;
+            padding: 14px 25px;
+            border-radius: 60px;
+            font-weight: 600;
+            box-shadow: 0 5px 0 #b48d56;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.05s;
+        }
+        .reset-mobil:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+
+        /* Großer Overlay-Pfeil (zentriert, verschwindet nach 1.5s) */
+        .pfeil-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;  /* Klicks gehen durch */
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        .pfeil-overlay.sichtbar {
+            opacity: 1;
+        }
+        .pfeil-inhalt {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            border-radius: 100px;
+            padding: 25px 50px;
+            box-shadow: 0 0 30px #ffe484;
+            font-size: 6rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 0 20px cyan, 0 0 40px blue;
+            transform: scale(1);
+            animation: pfeilPuls 1s infinite alternate;
+        }
+        @keyframes pfeilPuls {
+            from { transform: scale(1); text-shadow: 0 0 20px cyan; }
+            to { transform: scale(1.15); text-shadow: 0 0 40px gold, 0 0 20px orange; }
+        }
+
+        /* GANZ KLEINES COPYRIGHT (unauffällig) */
+        .copyright-klein {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #467a8b;
+            margin-top: 8px;
+            margin-bottom: 2px;
+            opacity: 0.7;
+            letter-spacing: 0.5px;
+        }
+
+        .fuss-mobil {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #0c4b5d;
+            font-weight: 550;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="mobil-karte">
+    <h1>
+        ⚖️ Le Chatelier
+        <span class="h1-sub">Essigsäure</span>
+    </h1>
+
+    <!-- Reaktionszeile -->
+    <div class="reaktions-reihe">
+        <span class="reihe-item">HAc</span>
+        <span class="reihe-symbol">+</span>
+        <span class="reihe-item">H₂O</span>
+        <span class="reihe-symbol">⇌</span>
+        <span class="reihe-item">Ac⁻</span>
+        <span class="reihe-symbol">+</span>
+        <span class="reihe-item">H₃O⁺</span>
+    </div>
+
+    <!-- Vier Spalten -->
+    <div class="spalten-row">
+        <div class="mini-spalte">
+            <div class="spalten-label">HAc</div>
+            <div class="kugel-stapel" id="stapelHAc"></div>
+            <div class="zaehler" id="zaehlerHAc">0</div>
+        </div>
+        <div class="mini-spalte">
+            <div class="spalten-label">H₂O</div>
+            <div class="kugel-stapel" id="stapelH2O"></div>
+            <div class="zaehler" id="zaehlerH2O">0</div>
+        </div>
+        <div class="mini-spalte">
+            <div class="spalten-label">Ac⁻</div>
+            <div class="kugel-stapel" id="stapelAc"></div>
+            <div class="zaehler" id="zaehlerAc">0</div>
+        </div>
+        <div class="mini-spalte">
+            <div class="spalten-label">H₃O⁺</div>
+            <div class="kugel-stapel" id="stapelH3O"></div>
+            <div class="zaehler" id="zaehlerH3O">0</div>
+        </div>
+    </div>
+
+    <!-- Button-Panel -->
+    <div class="button-grid">
+        <button class="btn-mobil zugabe-mobil" id="addHAc">➕HAc</button>
+        <button class="btn-mobil zugabe-mobil" id="addH2O">➕H₂O</button>
+        <button class="btn-mobil zugabe-mobil" id="addAc">➕Ac⁻</button>
+        <button class="btn-mobil zugabe-mobil" id="addH3O">➕H₃O⁺</button>
+        <button class="btn-mobil entnahme-mobil" id="removeHAc">➖HAc</button>
+        <button class="btn-mobil entnahme-mobil" id="removeH2O">➖H₂O</button>
+        <button class="btn-mobil entnahme-mobil" id="removeAc">➖Ac⁻</button>
+        <button class="btn-mobil entnahme-mobil" id="removeH3O">➖H₃O⁺</button>
+    </div>
+
+    <button class="reset-mobil" id="resetBtn">↺ Start (10,10,5,5)</button>
+    <div class="fuss-mobil">
+        K<sub>c</sub> = 0.25 · Jede Störung → neues Gleichgewicht
+    </div>
+
+    <!-- GANZ KLEINES COPYRIGHT (winzig, stört nicht) -->
+    <div class="copyright-klein">
+        © 2026 Dr. P. Kiliszek
+    </div>
+</div>
+
+<!-- Overlay für den großen Richtungspfeil -->
+<div id="pfeilOverlay" class="pfeil-overlay">
+    <div id="pfeilInhalt" class="pfeil-inhalt">→</div>
+</div>
+
+<script>
+    (function() {
+        // --- Zustandsvariablen ---
+        let nHAc = 10;   // Essigsäure
+        let nH2O = 10;   // Wasser
+        let nAc  = 5;    // Acetat
+        let nH3O = 5;    // Hydronium
+
+        const KC = 0.25;  // Gleichgewichtskonstante
+
+        // --- Pfeil-Overlay Elemente ---
+        const overlay = document.getElementById('pfeilOverlay');
+        const pfeilInhalt = document.getElementById('pfeilInhalt');
+        let pfeilTimer = null;
+
+        // Pfeil anzeigen (nach rechts '→' oder links '←') für 1.5 Sekunden
+        function zeigePfeil(richtung) {
+            if (pfeilTimer) {
+                clearTimeout(pfeilTimer);
+                overlay.classList.remove('sichtbar');
+            }
+            pfeilInhalt.innerText = richtung;  // '→' oder '←'
+            overlay.classList.add('sichtbar');
+            pfeilTimer = setTimeout(() => {
+                overlay.classList.remove('sichtbar');
+                pfeilTimer = null;
+            }, 1300); // gut sichtbar, aber kurz
+        }
+
+        // --- Runden für Anzeige ---
+        function runden(x) {
+            return Math.max(0, Math.round(x));
+        }
+
+        // --- Rendern der Kugelstapel ---
+        function rendereAlle() {
+            // HAc
+            const stapelHAc = document.getElementById('stapelHAc');
+            stapelHAc.innerHTML = '';
+            const hacRound = runden(nHAc);
+            for (let i = 0; i < Math.min(hacRound, 15); i++) {
+                let k = document.createElement('div');
+                k.className = 'kugel HAc';
+                stapelHAc.appendChild(k);
+            }
+            if (hacRound > 15) {
+                let mehr = document.createElement('div');
+                mehr.textContent = '+' + (hacRound - 15);
+                mehr.style.fontSize = '1rem';
+                mehr.style.background = '#222d';
+                mehr.style.color = 'white';
+                mehr.style.padding = '3px 8px';
+                mehr.style.borderRadius = '20px';
+                mehr.style.marginTop = '4px';
+                stapelHAc.appendChild(mehr);
+            } else if (hacRound === 0) {
+                let leer = document.createElement('div');
+                leer.textContent = '⚫';
+                leer.style.fontSize = '1.5rem';
+                leer.style.opacity = '0.5';
+                stapelHAc.appendChild(leer);
+            }
+            document.getElementById('zaehlerHAc').innerText = hacRound;
+
+            // H2O
+            const stapelH2O = document.getElementById('stapelH2O');
+            stapelH2O.innerHTML = '';
+            const h2oRound = runden(nH2O);
+            for (let i = 0; i < Math.min(h2oRound, 15); i++) {
+                let k = document.createElement('div');
+                k.className = 'kugel H2O';
+                stapelH2O.appendChild(k);
+            }
+            if (h2oRound > 15) {
+                let mehr = document.createElement('div');
+                mehr.textContent = '+' + (h2oRound - 15);
+                mehr.style.fontSize = '1rem';
+                mehr.style.background = '#222d';
+                mehr.style.color = 'white';
+                mehr.style.padding = '3px 8px';
+                mehr.style.borderRadius = '20px';
+                mehr.style.marginTop = '4px';
+                stapelH2O.appendChild(mehr);
+            } else if (h2oRound === 0) {
+                let leer = document.createElement('div');
+                leer.textContent = '⚫';
+                leer.style.fontSize = '1.5rem';
+                leer.style.opacity = '0.5';
+                stapelH2O.appendChild(leer);
+            }
+            document.getElementById('zaehlerH2O').innerText = h2oRound;
+
+            // Ac⁻
+            const stapelAc = document.getElementById('stapelAc');
+            stapelAc.innerHTML = '';
+            const acRound = runden(nAc);
+            for (let i = 0; i < Math.min(acRound, 15); i++) {
+                let k = document.createElement('div');
+                k.className = 'kugel Ac';
+                stapelAc.appendChild(k);
+            }
+            if (acRound > 15) {
+                let mehr = document.createElement('div');
+                mehr.textContent = '+' + (acRound - 15);
+                mehr.style.fontSize = '1rem';
+                mehr.style.background = '#222d';
+                mehr.style.color = 'white';
+                mehr.style.padding = '3px 8px';
+                mehr.style.borderRadius = '20px';
+                mehr.style.marginTop = '4px';
+                stapelAc.appendChild(mehr);
+            } else if (acRound === 0) {
+                let leer = document.createElement('div');
+                leer.textContent = '⚫';
+                leer.style.fontSize = '1.5rem';
+                leer.style.opacity = '0.5';
+                stapelAc.appendChild(leer);
+            }
+            document.getElementById('zaehlerAc').innerText = acRound;
+
+            // H3O⁺
+            const stapelH3O = document.getElementById('stapelH3O');
+            stapelH3O.innerHTML = '';
+            const h3oRound = runden(nH3O);
+            for (let i = 0; i < Math.min(h3oRound, 15); i++) {
+                let k = document.createElement('div');
+                k.className = 'kugel H3O';
+                stapelH3O.appendChild(k);
+            }
+            if (h3oRound > 15) {
+                let mehr = document.createElement('div');
+                mehr.textContent = '+' + (h3oRound - 15);
+                mehr.style.fontSize = '1rem';
+                mehr.style.background = '#222d';
+                mehr.style.color = 'white';
+                mehr.style.padding = '3px 8px';
+                mehr.style.borderRadius = '20px';
+                mehr.style.marginTop = '4px';
+                stapelH3O.appendChild(mehr);
+            } else if (h3oRound === 0) {
+                let leer = document.createElement('div');
+                leer.textContent = '⚫';
+                leer.style.fontSize = '1.5rem';
+                leer.style.opacity = '0.5';
+                stapelH3O.appendChild(leer);
+            }
+            document.getElementById('zaehlerH3O').innerText = h3oRound;
+        }
+
+        // --- Gleichgewichts-Relaxation (Le Chatelier) ---
+        function relaxToEquilibrium(HAc, H2O, Ac, H3O) {
+            let a = Math.max(0.1, HAc);
+            let b = Math.max(0.1, H2O);
+            let c = Math.max(0.1, Ac);
+            let d = Math.max(0.1, H3O);
+
+            const step = 0.22;
+            const tolerance = 0.002;
+            for (let i = 0; i < 400; i++) {
+                let Q = (c * d) / (a * b);
+                if (Math.abs(Q - KC) < tolerance) break;
+
+                if (Q > KC) { 
+                    // Rückreaktion: Ac + H3O → HAc + H2O  (Pfeil nach LINKS)
+                    let delta = Math.min(step, c * 0.4, d * 0.4);
+                    a += delta;
+                    b += delta;
+                    c -= delta;
+                    d -= delta;
+                } else { 
+                    // Hinreaktion: HAc + H2O → Ac + H3O  (Pfeil nach RECHTS)
+                    let delta = Math.min(step, a * 0.4, b * 0.4);
+                    a -= delta;
+                    b -= delta;
+                    c += delta;
+                    d += delta;
+                }
+                a = Math.max(0.1, a);
+                b = Math.max(0.1, b);
+                c = Math.max(0.1, c);
+                d = Math.max(0.1, d);
+            }
+            return { HAc: a, H2O: b, Ac: c, H3O: d };
+        }
+
+        // --- Störung + Relaxation + Pfeil + Rendern ---
+        function anwendenStörung(modifyFn, richtung) {
+            // richtung ist '→' oder '←'  (kann auch aus der Art der Störung automatisch ermittelt werden, 
+            // aber wir übergeben es direkt von jedem Button, weil wir wissen, ob Zugabe Edukt -> rechts, etc.
+            // Das ist didaktisch sauberer.
+            let state = { HAc: nHAc, H2O: nH2O, Ac: nAc, H3O: nH3O };
+            modifyFn(state);
+            state.HAc = Math.max(0.1, state.HAc);
+            state.H2O = Math.max(0.1, state.H2O);
+            state.Ac = Math.max(0.1, state.Ac);
+            state.H3O = Math.max(0.1, state.H3O);
+
+            let equil = relaxToEquilibrium(state.HAc, state.H2O, state.Ac, state.H3O);
+            
+            // Vor dem Aktualisieren schauen wir grob, ob sich Q in Richtung verschiebt?
+            // Wir haben die Richtung bereits als Parameter (basiert auf Le Chatelier)
+            // -> Pfeil anzeigen
+            zeigePfeil(richtung);
+            
+            nHAc = equil.HAc;
+            nH2O = equil.H2O;
+            nAc = equil.Ac;
+            nH3O = equil.H3O;
+            rendereAlle();
+        }
+
+        // --- Event Listener mit festgelegter Pfeilrichtung (nach Le Chatelier) ---
+        // Zugabe von Edukten (HAc, H2O) verschiebt nach rechts (→)
+        // Entnahme von Edukten verschiebt nach links (←)
+        // Zugabe von Produkten (Ac, H3O) verschiebt nach links (←)
+        // Entnahme von Produkten verschiebt nach rechts (→)
+        document.getElementById('addHAc').addEventListener('click', () => {
+            anwendenStörung((s) => { s.HAc += 3.0; }, '→');
+        });
+        document.getElementById('addH2O').addEventListener('click', () => {
+            anwendenStörung((s) => { s.H2O += 3.0; }, '→');
+        });
+        document.getElementById('addAc').addEventListener('click', () => {
+            anwendenStörung((s) => { s.Ac += 3.0; }, '←');
+        });
+        document.getElementById('addH3O').addEventListener('click', () => {
+            anwendenStörung((s) => { s.H3O += 3.0; }, '←');
+        });
+        document.getElementById('removeHAc').addEventListener('click', () => {
+            anwendenStörung((s) => { s.HAc = Math.max(0.2, s.HAc - 2.8); }, '←');
+        });
+        document.getElementById('removeH2O').addEventListener('click', () => {
+            anwendenStörung((s) => { s.H2O = Math.max(0.2, s.H2O - 2.8); }, '←');
+        });
+        document.getElementById('removeAc').addEventListener('click', () => {
+            anwendenStörung((s) => { s.Ac = Math.max(0.2, s.Ac - 2.8); }, '→');
+        });
+        document.getElementById('removeH3O').addEventListener('click', () => {
+            anwendenStörung((s) => { s.H3O = Math.max(0.2, s.H3O - 2.8); }, '→');
+        });
+        
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            nHAc = 10; nH2O = 10; nAc = 5; nH3O = 5;
+            rendereAlle();
+            // Kein Pfeil beim Reset
+        });
+
+        // Initial rendern
+        rendereAlle();
+    })();
+</script>
+</body>
+</html>
