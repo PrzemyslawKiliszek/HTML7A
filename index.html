@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>Le Chatelier · mit Richtungspfeil</title>
+    <title>Le Chatelier · großer Leuchtpfeil</title>
     <style>
         * {
             box-sizing: border-box;
@@ -194,7 +194,7 @@
             box-shadow: none;
         }
 
-        /* Großer Overlay-Pfeil (zentriert, verschwindet nach 1.5s) */
+        /* Großer, leuchtender Pfeil (ohne Hintergrund) */
         .pfeil-overlay {
             position: fixed;
             top: 0;
@@ -204,33 +204,30 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            pointer-events: none;  /* Klicks gehen durch */
+            pointer-events: none;
             z-index: 9999;
             opacity: 0;
-            transition: opacity 0.15s ease;
+            transition: opacity 0.2s ease;
         }
         .pfeil-overlay.sichtbar {
             opacity: 1;
         }
         .pfeil-inhalt {
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            border-radius: 100px;
-            padding: 25px 50px;
-            box-shadow: 0 0 30px #ffe484;
-            font-size: 6rem;
-            font-weight: 800;
-            color: white;
-            text-shadow: 0 0 20px cyan, 0 0 40px blue;
+            font-size: 12rem;        // RIESIG
+            font-weight: 900;
+            color: #a0f0ff;           // helles Türkis / Blau
+            text-shadow: 0 0 40px #00ffff, 0 0 80px #0077ff, 0 0 120px #0044ff;
+            line-height: 1;
             transform: scale(1);
-            animation: pfeilPuls 1s infinite alternate;
+            animation: pfeilSchweben 0.9s infinite alternate ease-in-out;
+            filter: drop-shadow(0 0 30px cyan);
         }
-        @keyframes pfeilPuls {
-            from { transform: scale(1); text-shadow: 0 0 20px cyan; }
-            to { transform: scale(1.15); text-shadow: 0 0 40px gold, 0 0 20px orange; }
+        @keyframes pfeilSchweben {
+            from { transform: scale(1) translateY(0); text-shadow: 0 0 40px #00ffff, 0 0 80px #00aaff; }
+            to { transform: scale(1.3) translateY(-10px); text-shadow: 0 0 60px #88f0ff, 0 0 100px #0066ff; }
         }
 
-        /* GANZ KLEINES COPYRIGHT (unauffällig) */
+        /* GANZ KLEINES COPYRIGHT */
         .copyright-klein {
             text-align: center;
             font-size: 0.6rem;
@@ -309,13 +306,13 @@
         K<sub>c</sub> = 0.25 · Jede Störung → neues Gleichgewicht
     </div>
 
-    <!-- GANZ KLEINES COPYRIGHT (winzig, stört nicht) -->
+    <!-- KLEINSTES COPYRIGHT (unten) -->
     <div class="copyright-klein">
         © 2026 Dr. P. Kiliszek
     </div>
 </div>
 
-<!-- Overlay für den großen Richtungspfeil -->
+<!-- Overlay für den riesigen Leuchtpfeil -->
 <div id="pfeilOverlay" class="pfeil-overlay">
     <div id="pfeilInhalt" class="pfeil-inhalt">→</div>
 </div>
@@ -507,9 +504,7 @@
 
         // --- Störung + Relaxation + Pfeil + Rendern ---
         function anwendenStörung(modifyFn, richtung) {
-            // richtung ist '→' oder '←'  (kann auch aus der Art der Störung automatisch ermittelt werden, 
-            // aber wir übergeben es direkt von jedem Button, weil wir wissen, ob Zugabe Edukt -> rechts, etc.
-            // Das ist didaktisch sauberer.
+            // richtung ist '→' oder '←'
             let state = { HAc: nHAc, H2O: nH2O, Ac: nAc, H3O: nH3O };
             modifyFn(state);
             state.HAc = Math.max(0.1, state.HAc);
@@ -519,9 +514,7 @@
 
             let equil = relaxToEquilibrium(state.HAc, state.H2O, state.Ac, state.H3O);
             
-            // Vor dem Aktualisieren schauen wir grob, ob sich Q in Richtung verschiebt?
-            // Wir haben die Richtung bereits als Parameter (basiert auf Le Chatelier)
-            // -> Pfeil anzeigen
+            // Pfeil anzeigen (Richtung wurde basierend auf Le Chatelier übergeben)
             zeigePfeil(richtung);
             
             nHAc = equil.HAc;
@@ -531,7 +524,7 @@
             rendereAlle();
         }
 
-        // --- Event Listener mit festgelegter Pfeilrichtung (nach Le Chatelier) ---
+        // --- Event Listener mit festgelegter Pfeilrichtung ---
         // Zugabe von Edukten (HAc, H2O) verschiebt nach rechts (→)
         // Entnahme von Edukten verschiebt nach links (←)
         // Zugabe von Produkten (Ac, H3O) verschiebt nach links (←)
